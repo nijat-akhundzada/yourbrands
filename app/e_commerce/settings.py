@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Our apps
     'api.apps.ApiConfig',
+    'account.apps.AccountConfig',
     # Third-part apps
     'rest_framework',
     'drf_spectacular',
@@ -145,3 +146,5 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }
+
+AUTH_USER_MODEL = 'account.CustomUser'
