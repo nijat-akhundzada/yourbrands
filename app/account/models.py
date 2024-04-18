@@ -8,6 +8,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.core.validators import RegexValidator
+from django.utils import timezone
 
 
 class CustomUserManager(BaseUserManager):
@@ -36,8 +37,8 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     """ User in the system. """
     GENDER_CHOICES = (
-        (1, "Kişi"),
-        (0, "Qadın"),
+        ('man', "Kişi"),
+        ('woman', "Qadın"),
     )
     mobile_number_regex = RegexValidator(
         regex=r'^(\+[0-9]{1,3})?[0-9]{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
@@ -47,7 +48,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     surname = models.CharField(max_length=255, blank=True, null=True)
     birth_date = models.DateField(blank=True, null=True)
     mobile_number = models.CharField(
-        max_length=15, validators=[mobile_number_regex], unique=True, blank=True, null=True)
+        max_length=15, validators=[mobile_number_regex], unique=True)
     gender = models.CharField(
         max_length=6, choices=GENDER_CHOICES, blank=True, null=True)
     is_active = models.BooleanField(default=True)
@@ -57,5 +58,20 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
 
+    class Meta:
+        verbose_name = 'Custom User'
+        verbose_name_plural = 'Custom Users'
+
     def __str__(self):
         return self.email
+
+
+class OTP(models.Model):
+    otp = models.CharField(max_length=6)
+    expiration_time = models.DateTimeField()
+
+    def is_expired(self):
+        return self.expiration_time < timezone.now()
+
+    def __str__(self):
+        return self.otp
