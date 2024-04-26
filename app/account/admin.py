@@ -9,7 +9,7 @@ from account.models import CustomUser
 class CustomUserAdmin(UserAdmin):
     """ Define the admin pages for users. """
     ordering = ['id']
-    list_display = ['email', 'name']
+    list_display = ['mobile_number', 'name', 'surname']
     fieldsets = (
         (None, {'fields': ('email', 'password', 'name',
          'surname', 'mobile_number', 'birth_date', 'gender')}),

@@ -11,27 +11,44 @@ class BaseModel(models.Model):
         abstract = True
 
 
+class Gender(models.Model):
+    GENDER_CHOICES = (
+        ('Men', 'Kişilər'),
+        ('Women', 'Qadınlar'),
+        ('Boys', 'Oğlanlar'),
+        ('Girls', 'Qızlar'),
+    )
+    type = models.CharField(
+        max_length=255, choices=GENDER_CHOICES, unique=True)
+
+    def __str__(self):
+        return self.type
+
+
 class Brand(BaseModel):
     name = models.CharField(max_length=255)
+    logo = models.ImageField(upload_to='brand_logos', blank=True, null=True)
 
     def __str__(self):
         return self.name
 
 
 class ParentCategory(BaseModel):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
+    gender = models.ManyToManyField(Gender, related_name='parent_categories')
 
     def __str__(self):
         return self.name
 
 
 class Category(BaseModel):
-    name = models.CharField(max_length=255)
-    parent_category = models.ForeignKey(
-        ParentCategory, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255, unique=True)
+    parent_category = models.ManyToManyField(
+        ParentCategory, related_name='categories')
+    gender = models.ManyToManyField(Gender, related_name='categories')
 
     def __str__(self):
-        return f'Parent category: {self.parent_category}, category: {self.name}'
+        return self.name
 
 
 class Subcategory(BaseModel):
@@ -42,29 +59,9 @@ class Subcategory(BaseModel):
         return f'Category: {self.category}, subcategory: {self.name}'
 
 
-class Size(models.Model):
-    size = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.size
-
-
-class Color(models.Model):
-    color = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.color
-
-
 class Product(BaseModel):
-    GENDER_CHOICES = (
-        (1, 'male'),
-        (2, 'female'),
-        (3, 'boy'),
-        (4, 'girl')
-    )
     name = models.CharField(max_length=255)
-    gender = models.CharField(max_length=255, choices=GENDER_CHOICES)
+    gender = models.ForeignKey(Gender, on_delete=models.CASCADE)
     brand = models.ForeignKey(
         Brand, on_delete=models.CASCADE, blank=True, null=True)
     parent_category = models.ForeignKey(
@@ -75,10 +72,11 @@ class Product(BaseModel):
         Subcategory, on_delete=models.CASCADE, blank=True, null=True)
     discount = models.FloatField()  # ?
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    size = models.ForeignKey(Size, on_delete=models.CASCADE)
-    color = models.ForeignKey(Color, on_delete=models.CASCADE)
+    size = models.CharField(max_length=255)
+    color = models.CharField(max_length=255)
     collection = models.CharField(max_length=255, blank=True, null=True)
-    product_code = models.CharField(max_length=255, blank=True, null=True)  # ?
+    product_code = models.CharField(max_length=255, blank=True, null=True)
+    number_of_views = models.IntegerField(default=0)
 
     def __str__(self):
         return f'{self.name},{self.brand}'
@@ -110,3 +108,11 @@ class PrivacyPolicy(BaseModel):
 
     def __str__(self):
         return 'Our Privacy Policy'
+
+
+class Offer(BaseModel):
+    title = models.CharField(max_length=255, default='')
+    image = models.ImageField(upload_to='offers_image')
+
+    def __str__(self):
+        return self.title
