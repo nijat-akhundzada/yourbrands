@@ -1,5 +1,7 @@
 from django.db import models
 
+from datetime import timedelta
+from django.utils import timezone
 # Create your models here.
 
 
@@ -70,13 +72,20 @@ class Product(BaseModel):
                                    )
     subcategories = models.ForeignKey(
         Subcategory, on_delete=models.CASCADE, blank=True, null=True)
-    discount = models.FloatField()  # ?
+    discount = models.FloatField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     size = models.CharField(max_length=255)
     color = models.CharField(max_length=255)
     collection = models.CharField(max_length=255, blank=True, null=True)
     product_code = models.CharField(max_length=255, blank=True, null=True)
     number_of_views = models.IntegerField(default=0)
+
+    def is_new(self):
+        new_threshold = timedelta(days=30)
+
+        threshold_date = timezone.now() - new_threshold
+
+        return self.created_at >= threshold_date
 
     def __str__(self):
         return f'{self.name},{self.brand}'
@@ -112,7 +121,23 @@ class PrivacyPolicy(BaseModel):
 
 class Offer(BaseModel):
     title = models.CharField(max_length=255, default='')
-    image = models.ImageField(upload_to='offers_image')
+    image = models.ImageField(upload_to='offers_images')
 
     def __str__(self):
         return self.title
+
+
+class Status(BaseModel):
+    title = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.title
+
+
+class StatusImages(BaseModel):
+    status = models.ForeignKey(
+        Status, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='status_images')
+
+    def __str__(self):
+        return self.status
