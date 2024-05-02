@@ -31,6 +31,8 @@ from account.views import MyTokenObtainPairView
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('api/', include('api.urls')),
+    # path('order/', include('cart.urls')),
+    # path('purchase/', include('purchase.urls')),
     path('account/', include('account.urls')),
 
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),

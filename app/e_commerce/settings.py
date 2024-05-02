@@ -34,7 +34,8 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(',')
 LOCAL_APPS = [
     'api.apps.ApiConfig',
     'account.apps.AccountConfig',
-    'order',
+    'cart.apps.CartConfig',
+    'purchase.apps.PurchaseConfig',
 ]
 
 # Application definition
