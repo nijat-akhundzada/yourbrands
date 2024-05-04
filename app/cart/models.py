@@ -1,6 +1,6 @@
 from django.db import models
 from account.models import CustomUser
-from api.models import Product
+from product.models import Product
 
 
 class Cart(models.Model):

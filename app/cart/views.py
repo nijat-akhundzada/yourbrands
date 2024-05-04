@@ -1,8 +1,8 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from order.models import Cart, CartItem
-from order.serializers import CartItemSerializer
+from cart.models import Cart, CartItem
+from cart.serializers import CartItemSerializer
 
 
 class CartItemCreateAPIView(APIView):

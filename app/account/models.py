@@ -8,9 +8,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.core.validators import RegexValidator
-from django.utils import timezone
-
-from api.models import Product
+from product.models import Product
 
 
 class CustomUserManager(BaseUserManager):
@@ -18,14 +16,13 @@ class CustomUserManager(BaseUserManager):
 
     def create_user(self, password=None, **extra_fields):
         """ Create, save and return a new user. """
-        # if not email:
-        #     raise ValueError('User must have an email address.')
-        user = self.model(
-            # email=self.normalize_email(email),
-            **extra_fields)
+        email = extra_fields.pop(
+            'email', None)  # Extract email from extra_fields
+        if email:
+            email = self.normalize_email(email)  # Normalize email if provided
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
-
         return user
 
     def create_superuser(self, password, **extra_fields):
@@ -83,32 +80,3 @@ class Wishlist(models.Model):
 
     def __str__(self):
         return f'Wishlist of {self.user.name} {self.user.surname}'
-
-
-class Address(models.Model):
-    mobile_number_regex = RegexValidator(
-        regex=r'^(\+[0-9]{1,3})?[0-9]{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
-
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    name_surname = models.CharField(max_length=255)
-    mobile_number = models.CharField(
-        max_length=15, validators=[mobile_number_regex])
-    city = models.CharField(max_length=255)
-    address = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f'address of {self.user.name
-                             } {self.user.surname}'
-
-
-class OTP(models.Model):
-    otp = models.CharField(max_length=6)
-    expiration_time = models.DateTimeField()
-
-    def is_expired(self):
-        return self.expiration_time < timezone.now()
-
-    def __str__(self):
-        return self.otp
