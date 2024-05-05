@@ -20,7 +20,9 @@ class CustomUserManager(BaseUserManager):
             'email', None)  # Extract email from extra_fields
         if email:
             email = self.normalize_email(email)  # Normalize email if provided
-        user = self.model(email=email, **extra_fields)
+            user = self.model(email=email, **extra_fields)
+        else:
+            user = self.model(**extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
