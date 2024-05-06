@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.core.validators import RegexValidator
 
+from detail.models import Status, StatusImages, Offer
+
 
 class SendOTPSerializer(serializers.Serializer):
     mobile_number_regex = RegexValidator(
@@ -12,3 +14,23 @@ class SendOTPSerializer(serializers.Serializer):
 class CheckOTPSerializer(serializers.Serializer):
     otp_id = serializers.IntegerField()
     otp = serializers.IntegerField()
+
+
+class StatusImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StatusImages
+        fields = ('id', 'image')
+
+
+class StatusSerializer(serializers.ModelSerializer):
+    images = StatusImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Status
+        fields = ('id', 'name', 'brand', 'images')
+
+
+class OfferSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Offer
+        fields = ('id', 'title', 'image')
