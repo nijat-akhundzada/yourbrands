@@ -74,9 +74,17 @@ class ProductListView(APIView):
                 'description': 'Size filter',
                 'schema': {'type': 'string'},
             },
+            {
+                'name': 'gender',
+                'required': False,
+                'in': 'query',
+                'description': 'Gender filter',
+                'schema': {'type': 'string'},
+            },
         ]
     )
     def get(self, request):
+
         price_min = request.query_params.get('price_min')
         price_max = request.query_params.get('price_max')
         color = request.query_params.get('color')
@@ -85,6 +93,7 @@ class ProductListView(APIView):
         category = request.query_params.get('category')
         subcategory = request.query_params.get('subcategory')
         size = request.query_params.get('size')
+        gender = request.query_params.get('gender')
 
         queryset = Product.objects.all()
 
@@ -104,6 +113,8 @@ class ProductListView(APIView):
             queryset = queryset.filter(subcategories__name=subcategory)
         if size is not None:
             queryset = queryset.filter(size=size)
+        if gender is not None:
+            queryset = queryset.filter(gender=gender)
 
         serializer = ProductSerializer(queryset, many=True)
         return Response(serializer.data)
