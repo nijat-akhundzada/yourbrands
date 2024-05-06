@@ -38,7 +38,7 @@ class OrderItem(models.Model):
 
 
 class CanceledOrder(models.Model):
-    order = models.ForeignKey(OrderItem, on_delete=models.SET_NULL)
+    order = models.ForeignKey(OrderItem, null=True, on_delete=models.SET_NULL)
     reason = models.CharField(max_length=255)
     additional_notes = models.TextField()
 
