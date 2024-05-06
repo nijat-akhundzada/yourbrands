@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
 from product.models import Product
 from product.serializers import ProductSerializer
 
@@ -12,6 +13,9 @@ from drf_spectacular.utils import extend_schema
 
 
 class ProductListView(APIView):
+    permission_classes = [IsAuthenticated,]
+    serializers_class = ProductSerializer
+
     @extend_schema(
         parameters=[
             {
@@ -106,17 +110,9 @@ class ProductListView(APIView):
 
 
 class ProductDetailView(APIView):
-    @extend_schema(
-        parameters=[
-            {
-                'name': 'id',
-                'required': True,
-                'in': 'path',
-                'description': 'Product ID',
-                'schema': {'type': 'integer'},
-            },
-        ]
-    )
+    permission_classes = [IsAuthenticated,]
+    serializer_class = ProductSerializer
+
     def get(self, request, id):
         try:
             product = Product.objects.get(id=id)

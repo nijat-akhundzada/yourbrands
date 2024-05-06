@@ -1,11 +1,15 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from cart.models import Cart, CartItem
 from cart.serializers import CartItemSerializer
 
 
 class CartItemCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CartItemSerializer
+
     def post(self, request):
         cart = Cart.objects.get_or_create(user=request.user)[0]
         serializer = CartItemSerializer(data=request.data)
@@ -16,6 +20,9 @@ class CartItemCreateAPIView(APIView):
 
 
 class CartItemUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CartItemSerializer
+
     def put(self, request, pk):
         try:
             cart_item = CartItem.objects.get(pk=pk)
