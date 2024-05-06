@@ -12,12 +12,9 @@ class AddressView(APIView):
     serializer_class = AddressSerializer
 
     def get(self, request):
-        try:
-            address = Address.objects.get(user=request.user)
-            serializer = AddressSerializer(address)
-            return Response(serializer.data)
-        except Address.DoesNotExist:
-            return Response({"detail": "Address does not exist for this user."}, status=status.HTTP_404_NOT_FOUND)
+        addresses = Address.objects.filter(user=request.user)
+        serializer = AddressSerializer(addresses, many=True)
+        return Response(serializer.data)
 
     def post(self, request):
         serializer = AddressSerializer(data=request.data)
@@ -26,21 +23,40 @@ class AddressView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request):
+
+class AddressDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AddressSerializer
+
+    def get_address(self, user, pk):
         try:
-            address = Address.objects.get(user=request.user)
+            return Address.objects.get(user=user, pk=pk)
+        except Address.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        address = self.get_address(request.user, pk)
+        if address:
+            serializer = AddressSerializer(address)
+            return Response(serializer.data)
+        else:
+            return Response({"detail": "Address not found or does not belong to this user."}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, pk):
+        address = self.get_address(request.user, pk)
+        if address:
             serializer = AddressSerializer(address, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Address.DoesNotExist:
-            return Response({"detail": "Address does not exist for this user."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"detail": "Address not found or does not belong to this user."}, status=status.HTTP_404_NOT_FOUND)
 
-    def delete(self, request):
-        try:
-            address = Address.objects.get(user=request.user)
+    def delete(self, request, pk):
+        address = self.get_address(request.user, pk)
+        if address:
             address.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        except Address.DoesNotExist:
-            return Response({"detail": "Address does not exist for this user."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"detail": "Address not found or does not belong to this user."}, status=status.HTTP_404_NOT_FOUND)
