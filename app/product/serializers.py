@@ -14,3 +14,6 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ('id', 'name', 'brand', 'images')
+
+    def get_discounted_price(self, obj):
+        return obj.discounted_price()

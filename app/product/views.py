@@ -1,8 +1,11 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.decorators import api_view
 from product.models import Product
 from product.serializers import ProductSerializer
+
+from django.db.models import Q
 
 from drf_spectacular.utils import extend_schema
 # Create your views here.
@@ -121,3 +124,19 @@ class ProductDetailView(APIView):
             return Response(serializer.data)
         except Product.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET',])
+def search_products(request):
+    search_term = request.query_params.get('search_term')
+
+    if search_term:
+        queryset = Product.objects.filter(
+            Q(name__icontains=search_term) | Q(
+                brand__name__icontains=search_term)
+        )
+
+        serializer = ProductSerializer(queryset, many=True)
+        return Response(serializer.data)
+    else:
+        return Response({'detail': 'Please provide a search term.'}, status=status.HTTP_400_BAD_REQUEST)

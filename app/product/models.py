@@ -72,13 +72,18 @@ class Product(BaseModel):
                                    )
     subcategories = models.ForeignKey(
         Subcategory, on_delete=models.CASCADE, blank=True, null=True)
-    discount = models.FloatField()
+    discount = models.FloatField(
+        default=0.0, help_text="Enter discount percentage for the product.")
     price = models.DecimalField(max_digits=10, decimal_places=2)
     size = models.CharField(max_length=255)
     color = models.CharField(max_length=255)
     collection = models.CharField(max_length=255, blank=True, null=True)
     product_code = models.CharField(max_length=255, blank=True, null=True)
     number_of_views = models.IntegerField(default=0)
+    number_of_products = models.IntegerField(default=1)
+
+    def discounted_price(self):
+        self.price = self.price - self.price * (1 - self.discount / 100)
 
     def is_new(self):
         new_threshold = timedelta(days=30)
