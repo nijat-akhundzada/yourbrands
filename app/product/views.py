@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from product.models import Product
 from product.serializers import ProductSerializer
-
+from purchase.models import OrderItem
 from django.db.models import Q
 
 from drf_spectacular.utils import extend_schema
@@ -95,7 +95,7 @@ class ProductListView(APIView):
         size = request.query_params.get('size')
         gender = request.query_params.get('gender')
 
-        queryset = Product.objects.all()
+        queryset = Product.objects.filter(number_of_products__gt=0)
 
         if price_min is not None:
             queryset = queryset.filter(price__gte=price_min)
@@ -143,7 +143,44 @@ def search_products(request):
                 brand__name__icontains=search_term)
         )
 
+        queryset = queryset.filter(number_of_products__gt=0)
+
         serializer = ProductSerializer(queryset, many=True)
         return Response(serializer.data)
     else:
         return Response({'detail': 'Please provide a search term.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def top_sold_products(request):
+    try:
+        # Get all order items
+        order_items = OrderItem.objects.all()
+
+        # Dictionary to store sold quantities for each product
+        product_sold_quantities = {}
+
+        # Calculate sold quantities for each product
+        for item in order_items:
+            product_id = item.product.id
+            if product_id in product_sold_quantities:
+                product_sold_quantities[product_id] += item.quantity
+            else:
+                product_sold_quantities[product_id] = item.quantity
+
+        # Sort products based on sold quantities in descending order
+        sorted_products = sorted(
+            product_sold_quantities.items(), key=lambda x: x[1], reverse=True)
+
+        # Retrieve the top sold products (let's say top 10)
+        top_sold_products = []
+        for product_id, sold_quantity in sorted_products[:10]:
+            product = Product.objects.get(id=product_id)
+            top_sold_products.append({
+                'product': ProductSerializer(product).data,
+                'sold_quantity': sold_quantity
+            })
+
+        return Response(top_sold_products, status=status.HTTP_200_OK)
+    except:
+        return Response({'message': 'No products sold'}, status=status.HTTP_404_NOT_FOUND)

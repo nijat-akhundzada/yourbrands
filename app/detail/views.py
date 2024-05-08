@@ -9,6 +9,7 @@ import os
 from twilio.rest import Client
 import random
 from django.utils import timezone
+from django.http import HttpRequest
 from drf_spectacular.utils import extend_schema
 
 
@@ -16,7 +17,7 @@ from drf_spectacular.utils import extend_schema
     description="Send OTP to the provided phone number.", request=SendOTPSerializer
 )
 @api_view(['POST',])
-def send_otp(request):
+def send_otp(request: HttpRequest):
     phone_number = request.data.get('mobile_number')
     if not phone_number:
         return Response({'message': 'Phone number is required.'}, status=status.HTTP_400_BAD_REQUEST)

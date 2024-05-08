@@ -80,7 +80,7 @@ class Product(BaseModel):
     collection = models.CharField(max_length=255, blank=True, null=True)
     product_code = models.CharField(max_length=255, blank=True, null=True)
     number_of_views = models.IntegerField(default=0)
-    number_of_products = models.IntegerField(default=1)
+    stock = models.IntegerField(default=1)
 
     def discounted_price(self):
         self.price = self.price - self.price * (1 - self.discount / 100)
