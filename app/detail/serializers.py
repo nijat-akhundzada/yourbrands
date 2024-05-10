@@ -16,21 +16,19 @@ class CheckOTPSerializer(serializers.Serializer):
     otp = serializers.IntegerField()
 
 
-class StatusImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = StatusImages
-        fields = ('id', 'image')
-
-
-class StatusSerializer(serializers.ModelSerializer):
-    images = StatusImageSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Status
-        fields = ('id', 'name', 'brand', 'images')
-
-
 class OfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
-        fields = ('id', 'title', 'image')
+        fields = ['id', 'title', 'image']
+
+
+class StatusSerializer(serializers.ModelSerializer):
+    images = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Status
+        fields = ['id', 'title', 'images']
+
+    def get_images(self, obj):
+        images = StatusImages.objects.filter(status=obj)
+        return [image.image.url for image in images]

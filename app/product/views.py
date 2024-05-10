@@ -3,12 +3,12 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
-from product.models import Product
-from product.serializers import ProductSerializer
+from product.models import Product, Brand
+from product.serializers import ProductSerializer, BrandSerializer
 from purchase.models import OrderItem
 from django.db.models import Q
 
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 # Create your views here.
 
 
@@ -18,69 +18,60 @@ class ProductListView(APIView):
 
     @extend_schema(
         parameters=[
-            {
-                'name': 'price_min',
-                'required': False,
-                'in': 'query',
-                'description': 'Minimum price filter',
-                'schema': {'type': 'number'},
-            },
-            {
-                'name': 'price_max',
-                'required': False,
-                'in': 'query',
-                'description': 'Maximum price filter',
-                'schema': {'type': 'number'},
-            },
-            {
-                'name': 'color',
-                'required': False,
-                'in': 'query',
-                'description': 'Color filter',
-                'schema': {'type': 'string'},
-            },
-            {
-                'name': 'brand',
-                'required': False,
-                'in': 'query',
-                'description': 'Brand filter',
-                'schema': {'type': 'string'},
-            },
-            {
-                'name': 'parent_category',
-                'required': False,
-                'in': 'query',
-                'description': 'Parent category filter',
-                'schema': {'type': 'string'},
-            },
-            {
-                'name': 'category',
-                'required': False,
-                'in': 'query',
-                'description': 'Category filter',
-                'schema': {'type': 'string'},
-            },
-            {
-                'name': 'subcategory',
-                'required': False,
-                'in': 'query',
-                'description': 'Subcategory filter',
-                'schema': {'type': 'string'},
-            },
-            {
-                'name': 'size',
-                'required': False,
-                'in': 'query',
-                'description': 'Size filter',
-                'schema': {'type': 'string'},
-            },
-            {
-                'name': 'gender',
-                'required': False,
-                'in': 'query',
-                'description': 'Gender filter',
-                'schema': {'type': 'string'},
-            },
+            OpenApiParameter(
+                name='price_min',
+                type=int,
+                location='query',
+                description='Minimum price filter',
+            ),
+            OpenApiParameter(
+                name='price_max',
+                type=int,
+                location='query',
+                description='Maximum price filter',
+            ),
+            OpenApiParameter(
+                name='color',
+                type=str,
+                location='query',
+                description='Color filter',
+            ),
+            OpenApiParameter(
+                name='brand',
+                type=str,
+                location='query',
+                description='Brand filter',
+            ),
+            OpenApiParameter(
+                name='parent_category',
+                type=str,
+                location='query',
+                description='Parent category filter',
+            ),
+            OpenApiParameter(
+                name='category',
+                type=str,
+                location='query',
+                description='Category filter',
+            ),
+            OpenApiParameter(
+                name='subcategory',
+                type=str,
+                location='query',
+                description='Subcategory filter',
+            ),
+            OpenApiParameter(
+                name='size',
+                type=str,
+                location='query',
+                description='Size filter',
+            ),
+            OpenApiParameter(
+                name='gender',
+                type=str,
+                location='query',
+                description='Gender filter',
+            ),
         ]
     )
     def get(self, request):
@@ -184,3 +175,10 @@ def top_sold_products(request):
         return Response(top_sold_products, status=status.HTTP_200_OK)
     except:
         return Response({'message': 'No products sold'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+def get_brands(request):
+    brands = Brand.objects.all()
+    serializer = BrandSerializer(brands, many=True)
+    return (serializer.data)

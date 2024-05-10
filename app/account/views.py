@@ -1,10 +1,11 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from account.models import CustomUser
-from account.serializers import CustomUserSerializer, MyTokenObtainPairSerializer, ResetPasswordSerializer, ChangePasswordSerializer, WishlistDocsSerializer, WishlistSerializer
+from account.models import CustomUser, Wishlist
+from account.serializers import CustomUserSerializer, MyTokenObtainPairSerializer, ResetPasswordSerializer, ChangePasswordSerializer, WishlistSerializer
+from django.shortcuts import get_object_or_404
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -19,10 +20,10 @@ class CustomUserListCreateAPIView(APIView):
 
     serializer_class = CustomUserSerializer
 
-    def get(self, request):
-        users = CustomUser.objects.all()
-        serializer = CustomUserSerializer(users, many=True)
-        return Response(serializer.data)
+    # def get(self, request):
+    #     users = CustomUser.objects.all()
+    #     serializer = CustomUserSerializer(users, many=True)
+    #     return Response(serializer.data)
 
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
@@ -103,40 +104,33 @@ def reset_password(request):
 
 class WishlistView(APIView):
     permission_classes = [IsAuthenticated,]
+    serializer_class = WishlistSerializer
 
     def get(self, request):
-        wishlist = Wishlist.objects.get_or_create(user=request.user)[0]
+        wishlist = get_object_or_404(Wishlist, user=request.user)
         serializer = WishlistSerializer(wishlist)
-
         return Response(serializer.data)
 
-    @extend_schema(
-        request=WishlistDocsSerializer
-    )
     def post(self, request):
-        wishlist = Wishlist.objects.get_or_create(user=request.user)[0]
-        product_id = request.data.get('product_id')
-        if product_id is not None:
-            wishlist.products.add(product_id)
+        wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+        product_ids = request.data.get('products', [])
+        if product_ids:
+            wishlist.products.add(*product_ids)
             wishlist.save()
             serializer = WishlistSerializer(wishlist)
             return Response(serializer.data)
         else:
-            return Response({"error": "Product ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Product IDs are required"}, status=status.HTTP_400_BAD_REQUEST)
 
-    @extend_schema(
-        request=WishlistDocsSerializer
-    )
-    def delete(self, request):
-        wishlist = Wishlist.objects.get_or_create(user=request.user)[0]
-        product_id = request.data.get('product_id')
-        if product_id is not None:
-            try:
-                wishlist.products.remove(product_id)
-                wishlist.save()
-                serializer = WishlistSerializer(wishlist)
-                return Response(serializer.data)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"error": "Product ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def wishlist_product_delete(request, pk):
+    wishlist = get_object_or_404(Wishlist, user=request.user)
+    try:
+        wishlist.products.remove(pk)
+        wishlist.save()
+        serializer = WishlistSerializer(wishlist)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

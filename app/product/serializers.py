@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from product.models import Product, ProductImages
+from product.models import Product, ProductImages, Brand
 
 
 class ProductImagesSerializer(serializers.ModelSerializer):
@@ -17,3 +17,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_discounted_price(self, obj):
         return obj.discounted_price()
+
+
+class BrandSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        fields = ('id', 'name', 'logo')

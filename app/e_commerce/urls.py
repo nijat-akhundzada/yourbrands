@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -30,7 +30,7 @@ from account.views import MyTokenObtainPairView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('product', include('product.urls')),
+    path('product/', include('product.urls')),
     path('detail/', include('detail.urls')),
     path('address/', include('address.urls')),
     path('cart/', include('cart.urls')),

@@ -16,6 +16,11 @@ class FAQ(BaseModel):
     question = models.CharField(max_length=255)
     answer = models.TextField()
 
+    def __str__(self):
+        if len(self.question) <= 30:
+            return self.question
+        return f'{self.question[:30]} ...'
+
 
 class TermAndCondition(BaseModel):
     terms_and_conditions = models.TextField()

@@ -24,6 +24,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Add custom claims
         token['mobile_number'] = user.mobile_number
+        token['name'] = user.name
+        token['surname'] = user.surname
 
         return token
 
@@ -47,8 +49,4 @@ class WishlistSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wishlist
         # fields = '__all__'
-        fields = ['id', 'user', 'products']
-
-
-class WishlistDocsSerializer(serializers.Serializer):
-    product_id = serializers.IntegerField()
+        fields = ['id', 'products']

@@ -1,9 +1,10 @@
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
-from detail.models import OTP
-from detail.serializers import CheckOTPSerializer, SendOTPSerializer
+from detail.models import OTP, Offer, Status
+from detail.serializers import CheckOTPSerializer, SendOTPSerializer, OfferSerializer, StatusSerializer
 
+from django.shortcuts import get_object_or_404
 
 import os
 from twilio.rest import Client
@@ -68,3 +69,17 @@ def check_otp(request):
     if str(otp_entered) == otp_obj.otp:
         otp_obj.delete()  # Delete OTP object after successful verification
         return Response({'message': 'OTP verified successfully'}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def get_offers(request):
+    offers = Offer.objects.all()
+    serializer = OfferSerializer(offers, many=True)
+    return serializer.data
+
+
+@api_view(['GET'])
+def get_statuses(request):
+    statuses = Status.objects.all()
+    serializer = StatusSerializer(statuses, many=True)
+    return serializer.data
