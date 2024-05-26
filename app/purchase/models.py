@@ -8,7 +8,7 @@ class Order(models.Model):
     STATUS_CHOICES = (
         ('Processing', 'Hazırlanır'),
         ('Delivered', 'Təslim edildi'),
-        ('Cancelled', 'Cancelled'),
+        ('Cancelled', 'Ləğv edildi'),
     )
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
