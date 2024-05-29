@@ -1,80 +1,59 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from product.models import Product, Brand
 from product.serializers import ProductSerializer, BrandSerializer
 from purchase.models import OrderItem
 from django.db.models import Q
 
+
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 # Create your views here.
 
 
-class ProductListView(APIView):
-    permission_classes = [IsAuthenticated,]
-    serializers_class = ProductSerializer
+class ProductsPagination(PageNumberPagination):
+    page_size = 10  # Default page size
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
-    @extend_schema(
-        parameters=[
-            OpenApiParameter(
-                name='price_min',
-                type=int,
-                location='query',
-                description='Minimum price filter',
-            ),
-            OpenApiParameter(
-                name='price_max',
-                type=int,
-                location='query',
-                description='Maximum price filter',
-            ),
-            OpenApiParameter(
-                name='color',
-                type=str,
-                location='query',
-                description='Color filter',
-            ),
-            OpenApiParameter(
-                name='brand',
-                type=str,
-                location='query',
-                description='Brand filter',
-            ),
-            OpenApiParameter(
-                name='parent_category',
-                type=str,
-                location='query',
-                description='Parent category filter',
-            ),
-            OpenApiParameter(
-                name='category',
-                type=str,
-                location='query',
-                description='Category filter',
-            ),
-            OpenApiParameter(
-                name='subcategory',
-                type=str,
-                location='query',
-                description='Subcategory filter',
-            ),
-            OpenApiParameter(
-                name='size',
-                type=str,
-                location='query',
-                description='Size filter',
-            ),
-            OpenApiParameter(
-                name='gender',
-                type=str,
-                location='query',
-                description='Gender filter',
-            ),
-        ]
-    )
-    def get(self, request):
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(name='price_min', type=int,
+                         location='query', description='Minimum price filter'),
+        OpenApiParameter(name='price_max', type=int,
+                         location='query', description='Maximum price filter'),
+        OpenApiParameter(name='color', type=str,
+                         location='query', description='Color filter'),
+        OpenApiParameter(name='brand', type=str,
+                         location='query', description='Brand filter'),
+        OpenApiParameter(name='parent_category', type=str,
+                         location='query', description='Parent category filter'),
+        OpenApiParameter(name='category', type=str,
+                         location='query', description='Category filter'),
+        OpenApiParameter(name='subcategory', type=str,
+                         location='query', description='Subcategory filter'),
+        OpenApiParameter(name='size', type=str,
+                         location='query', description='Size filter'),
+        OpenApiParameter(name='gender', type=str,
+                         location='query', description='Gender filter'),
+        OpenApiParameter(name='page', type=int, location='query',
+                         description='Page number for pagination'),
+        OpenApiParameter(name='page_size', type=int, location='query',
+                         description='Number of items per page')
+    ]
+)
+class ProductListView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProductSerializer
+    pagination_class = ProductsPagination
+
+    def get_queryset(self):
+        request = self.request
 
         price_min = request.query_params.get('price_min')
         price_max = request.query_params.get('price_max')
@@ -107,8 +86,7 @@ class ProductListView(APIView):
         if gender is not None:
             queryset = queryset.filter(gender=gender)
 
-        serializer = ProductSerializer(queryset, many=True)
-        return Response(serializer.data)
+        return queryset
 
 
 class ProductDetailView(APIView):
@@ -124,6 +102,44 @@ class ProductDetailView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 
+class SimilarProductsView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProductSerializer
+    pagination_class = ProductsPagination
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name='id', type=int, location='query',
+                             description='ID of the product to find similar items for'),
+            OpenApiParameter(name='page', type=int, location='query',
+                             description='Page number for pagination'),
+            OpenApiParameter(name='page_size', type=int, location='query',
+                             description='Number of items per page')
+        ]
+    )
+    def get(self, request):
+        product_id = request.query_params.get('id')
+        if not product_id:
+            return Response({'detail': 'Product ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response({'detail': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        similar_products = Product.objects.filter(
+            subcategories__in=product.subcategories.all(),
+            categories__in=product.categories.all(),
+        ).exclude(id=product_id)  # Exclude the current product
+
+        paginator = ProductsPagination()
+        paginated_products = paginator.paginate_queryset(
+            similar_products, request)
+        serializer = ProductSerializer(paginated_products, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
+
+
 @api_view(['GET',])
 def search_products(request):
     search_term = request.query_params.get('search_term')
@@ -136,8 +152,11 @@ def search_products(request):
 
         queryset = queryset.filter(number_of_products__gt=0)
 
-        serializer = ProductSerializer(queryset, many=True)
-        return Response(serializer.data)
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = ProductSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
     else:
         return Response({'detail': 'Please provide a search term.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -172,7 +191,10 @@ def top_sold_products(request):
                 'sold_quantity': sold_quantity
             })
 
-        return Response(top_sold_products, status=status.HTTP_200_OK)
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        result_page = paginator.paginate_queryset(top_sold_products, request)
+        return paginator.get_paginated_response(result_page)
     except:
         return Response({'message': 'No products sold'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -180,5 +202,8 @@ def top_sold_products(request):
 @api_view(['GET'])
 def get_brands(request):
     brands = Brand.objects.all()
-    serializer = BrandSerializer(brands, many=True)
-    return (serializer.data)
+    paginator = PageNumberPagination()
+    paginator.page_size = 10
+    result_page = paginator.paginate_queryset(brands, request)
+    serializer = BrandSerializer(result_page, many=True)
+    return paginator.get_paginated_response(serializer.data)
