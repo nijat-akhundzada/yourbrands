@@ -6,3 +6,4 @@ docker exec -it e-commerce_api /bin/sh
 docker-compose -f docker-compose-deploy.yml down --volumes
 docker-compose -f docker-compose-deploy.yml build
 docker-compose -f docker-compose-deploy.yml up
+docker-compose -f docker-compose-deploy.yml down

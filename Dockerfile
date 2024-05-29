@@ -8,8 +8,8 @@ ENV PYTHONUNBUFFERED 1
 
 RUN mkdir /app
 COPY ./requirements.txt /tmp/requirements.txt
-COPY ./app /app
 COPY ./scripts /scripts
+COPY ./app /app
 
 WORKDIR /app
 EXPOSE 8000
