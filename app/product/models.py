@@ -35,6 +35,15 @@ class Brand(BaseModel):
         return self.name
 
 
+class BrandWithImage(BaseModel):
+    name = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='brand_images')
+    gender = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f'{self.name}-{self.gender}'
+
+
 class ParentCategory(BaseModel):
     name = models.CharField(max_length=255, unique=True)
     gender = models.ManyToManyField(Gender, related_name='parent_categories')

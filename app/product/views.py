@@ -5,8 +5,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
-from product.models import Product, Brand
-from product.serializers import ProductSerializer, BrandSerializer
+from product.models import Product, Brand, BrandWithImage
+from product.serializers import ProductSerializer, BrandSerializer, BrandWithImageSerializer
 from purchase.models import OrderItem
 from django.db.models import Q
 
@@ -207,3 +207,14 @@ def get_brands(request):
     result_page = paginator.paginate_queryset(brands, request)
     serializer = BrandSerializer(result_page, many=True)
     return paginator.get_paginated_response(serializer.data)
+
+
+@extend_schema(request=BrandWithImageSerializer)
+@api_view(['POST'])
+def get_brands_with_images(request):
+    gender = request.data.get('gender')
+    if gender:
+        filtered_brands = BrandWithImage.objects.filter(gender=gender)
+        serializer = BrandWithImageSerializer(filtered_brands, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response({'error': 'Gender not provided'}, status=status.HTTP_400_BAD_REQUEST)

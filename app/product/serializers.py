@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from product.models import Product, ProductImages, Brand
+from product.models import Product, ProductImages, Brand, BrandWithImage
 
 
 class ProductImagesSerializer(serializers.ModelSerializer):
@@ -23,3 +23,10 @@ class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
         fields = ('id', 'name', 'logo')
+
+
+class BrandWithImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BrandWithImage
+        fields = ('id', 'name', 'image', 'gender')
+        read_only_fields = ['name', 'image']
