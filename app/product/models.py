@@ -75,7 +75,7 @@ class Product(BaseModel):
     discount = models.FloatField(
         default=0.0, help_text="Enter discount percentage for the product.")
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    size = models.CharField(max_length=255)
+    size = models.CharField(max_length=255, blank=True, null=True)
     color = models.CharField(max_length=255)
     collection = models.CharField(max_length=255, blank=True, null=True)
     product_code = models.CharField(max_length=255, blank=True, null=True)

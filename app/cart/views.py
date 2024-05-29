@@ -10,6 +10,9 @@ class CartItemCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CartItemSerializer
 
+    def get(self, request):
+        ''' User cart '''
+
     def post(self, request):
         cart = Cart.objects.get_or_create(user=request.user)[0]
         serializer = CartItemSerializer(data=request.data)
