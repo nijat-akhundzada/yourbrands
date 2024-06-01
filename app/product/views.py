@@ -65,7 +65,10 @@ class ProductListView(ListAPIView):
         size = request.query_params.get('size')
         gender = request.query_params.get('gender')
 
-        queryset = Product.objects.filter(number_of_products__gt=0)
+        try:
+            queryset = Product.objects.filter(stock__gt=0)
+        except:
+            queryset = []
 
         if price_min is not None:
             queryset = queryset.filter(price__gte=price_min)
