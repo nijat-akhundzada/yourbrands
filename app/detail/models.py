@@ -57,7 +57,7 @@ class StatusImages(BaseModel):
     image = models.ImageField(upload_to='status_images')
 
     def __str__(self):
-        return self.status
+        return self.status.title
 
 
 class OTP(models.Model):

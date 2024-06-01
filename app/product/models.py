@@ -102,7 +102,7 @@ class Product(BaseModel):
         return self.created_at >= threshold_date
 
     def __str__(self):
-        return f'{self.name},{self.brand}'
+        return f'{self.name},{self.brand.name}'
 
 
 class ProductImages(BaseModel):
@@ -111,4 +111,4 @@ class ProductImages(BaseModel):
     image = models.ImageField(upload_to='product_images')
 
     def __str__(self):
-        return self.product
+        return self.product.name
