@@ -75,11 +75,11 @@ def check_otp(request):
 def get_offers(request):
     offers = Offer.objects.all()
     serializer = OfferSerializer(offers, many=True)
-    return serializer.data
+    return Response(serializer.data)
 
 
 @api_view(['GET'])
 def get_statuses(request):
     statuses = Status.objects.all()
     serializer = StatusSerializer(statuses, many=True)
-    return serializer.data
+    return Response(serializer.data)
