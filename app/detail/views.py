@@ -25,21 +25,21 @@ def send_otp(request: HttpRequest):
 
     otp = ''.join([str(random.randint(0, 9)) for _ in range(4)])
 
-    try:
-        client = Client(os.environ.get('twilio_account_SID'),
-                        os.environ.get("twilio_auth_token"))
+    # try:
+    #     client = Client(os.environ.get('twilio_account_SID'),
+    #                     os.environ.get("twilio_auth_token"))
 
-        client.messages.create(
-            body=f'Your OTP for authentication is {otp}',
-            from_=os.environ.get('twilio_phone_number'),
-            to=phone_number
-        )
-    except Exception as e:
-        return Response({'message': f'Error sending OTP: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    #     client.messages.create(
+    #         body=f'Your OTP for authentication is {otp}',
+    #         from_=os.environ.get('twilio_phone_number'),
+    #         to=phone_number
+    #     )
+    # except Exception as e:
+    #     return Response({'message': f'Error sending OTP: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     otp_obj = OTP.objects.create(otp=otp,
                                  expiration_time=timezone.now() + timezone.timedelta(minutes=180))
-    return Response({'message': 'OTP sent to the phone number', 'otp_id': otp_obj.pk}, status=status.HTTP_200_OK)
+    return Response({'message': 'OTP sent to the phone number', 'otp_id': otp_obj.pk, 'otp':otp}, status=status.HTTP_200_OK)
 
 
 @extend_schema(
