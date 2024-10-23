@@ -169,12 +169,24 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Yourbrands',
-    'DESCRIPTION': 'Backend endpoints of Yourbrands',
+    'TITLE': 'Yourbrands API',
+    'DESCRIPTION': (
+        'Yourbrands API provides backend endpoints for managing and interacting '
+        'with the Yourbrands platform. It includes comprehensive access to all the '
+        'core features, including user management, product listings, orders, and more.'
+    ),
     'VERSION': '1.0.0',
-    'CONTACT': {"name": "Nijat Akhundzada", "email": "nicataxundzada@gmail.com", 'github':'https://github.com/nijat-akhundzada'}
-
+    'CONTACT': {
+        'name': 'Nijat Akhundzada',
+        'email': 'nicataxundzada@gmail.com',
+        'url': 'https://github.com/nijat-akhundzada',
+    },
+    'LICENSE': {
+        'name': 'MIT License',
+        'url': 'https://opensource.org/licenses/MIT',
+    },
 }
+
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
