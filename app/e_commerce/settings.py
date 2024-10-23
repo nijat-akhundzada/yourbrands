@@ -169,10 +169,11 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'DRF E-commerce API',
-    'DESCRIPTION': 'E-commerce API for Maestro interns',
+    'TITLE': 'Yourbrands',
+    'DESCRIPTION': 'Backend endpoints of Yourbrands',
     'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': True,
+    'CONTACT': {"name": "Nijat Akhundzada", "email": "nicataxundzada@gmail.com", 'github':'https://github.com/nijat-akhundzada'}
+
 }
 
 SIMPLE_JWT = {
